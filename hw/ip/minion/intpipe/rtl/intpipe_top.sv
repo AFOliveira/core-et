@@ -352,9 +352,12 @@ module intpipe_top
 
           end // for (integer i = 0; i < NrThreads; i++)
 
-        // Instruction can't move forward
-        // We are in fence mode and it is a memory instruction or a CSR access (ex: TensorFMA wants TensorLoad to be done)
-        id_do_fence = id_dcache_busy[id_thread_id] && id_reg_fence[id_thread_id] && (id_ctrl.mem || id_csr_en || id_ctrl.fence) && !id_xcpt_ignore_opcode;
+        // A fence cannot issue until older DCache-visible work for the same
+        // thread is ordered. Once a fence has issued, hold following
+        // instructions while the fence state remains busy.
+        id_do_fence = id_dcache_busy[id_thread_id] &&
+                      ((id_fence_new && id_valid) || id_reg_fence[id_thread_id]) &&
+                      !id_xcpt_ignore_opcode;
      end
 
    // Stalls for exclusive mode
@@ -448,9 +451,9 @@ module intpipe_top
              // Data coming from EX stage
              if(!id_raddr_zero[i] && (ex_thread_id == id_thread_id) && ex_reg_valid && ex_ctrl.wxd && (ex_waddr == id_raddr[i]))
                id_reg_data[i] = ex_alu_out;
-             // Data coming from TAG stage alu
+             // Data coming from TAG stage. JALR writes PC+2/4 while its ALU result is the jump target.
              else if(!id_raddr_zero[i] && (tag_thread_id == id_thread_id) && tag_reg_valid && tag_ctrl.wxd && (tag_waddr == id_raddr[i]))
-               id_reg_data[i] = tag_reg_wdata; //used to be tag_int_wdata => but only need reg_wdata ( int_data may contain branch target... but no bypass needed if branch)
+               id_reg_data[i] = tag_int_wdata;
              // Data coming from MEM stage alu
              else if(!id_raddr_zero[i] && (mem_thread_id == id_thread_id) && mem_reg_valid && mem_ctrl.wxd && (mem_waddr == id_raddr[i]))
                id_reg_data[i] = mem_reg_wdata;
@@ -1145,6 +1148,13 @@ module intpipe_top
    logic             id_int_sboard_x31;      // Scoreboard bit for register X31
    logic             id_inst_requires_x31;   // Instructions requires implicit usage of X31
    logic             id_int_sboard_hazard;   // There's an integer hazard with the scoreboard
+   logic [2:0]       id_int_load_pending_bits; // Read ports blocked by a just-issued scalar load
+   logic [NrThreads-1:0] id_load_pending_valid;
+   logic [NrThreads-1:0] id_load_pending_valid_next;
+   minion_reg_dest_t [NrThreads-1:0] id_load_pending_dest;
+   minion_reg_dest_t [NrThreads-1:0] id_load_pending_dest_next;
+   logic [NrThreads-1:0][2:0] id_load_pending_count;
+   logic [NrThreads-1:0][2:0] id_load_pending_count_next;
    logic             ex_div_ready;           // Div unit is ready to accept new requests
    logic             wb_div_wen;             // Write enable due a divide
 
@@ -1166,11 +1176,68 @@ module intpipe_top
       .int_div_dest      ( wb_div_resp_dest        ),
       .int_flb_valid     ( wb_flb_scoreboard_valid ),
       .int_flb_dest      ( wb_flb_scoreboard_addr  ),
-      .vpu_scoreboard    ( id_vpu_ctrl.scoreboard  )
-      );
+       .vpu_scoreboard    ( id_vpu_ctrl.scoreboard  )
+       );
 
    assign id_inst_requires_x31 = id_ctrl.x31;
-   assign id_int_sboard_hazard = |(id_int_sboard_bits & id_int_hazard_en) || (id_int_sboard_x31 && id_inst_requires_x31);
+   always_comb begin
+      id_int_load_pending_bits = '0;
+      for (integer rport = 0; rport < 3; rport++) begin
+         for (integer thread = 0; thread < NrThreads; thread++) begin
+            id_int_load_pending_bits[rport] |=
+              id_load_pending_valid[thread] &&
+              id_load_pending_dest[thread].thread_id == id_thread_id &&
+              id_load_pending_dest[thread].addr == id_int_hazard_addr[rport];
+         end
+      end
+   end
+
+   always_comb begin
+      id_load_pending_valid_next = id_load_pending_valid;
+      id_load_pending_dest_next = id_load_pending_dest;
+      id_load_pending_count_next = id_load_pending_count;
+
+      for (integer thread = 0; thread < NrThreads; thread++) begin
+         if (id_load_pending_valid[thread]) begin
+            if (id_load_pending_count[thread] == 3'd0) begin
+               id_load_pending_valid_next[thread] = 1'b0;
+            end else begin
+               id_load_pending_count_next[thread] = id_load_pending_count[thread] - 3'd1;
+            end
+         end
+      end
+
+      if (wb_rf_wen) begin
+         for (integer thread = 0; thread < NrThreads; thread++) begin
+            if (id_load_pending_valid[thread] &&
+                id_load_pending_dest[thread].thread_id == wb_rf_thread_id &&
+                id_load_pending_dest[thread].addr == wb_rf_waddr) begin
+               id_load_pending_valid_next[thread] = 1'b0;
+               id_load_pending_count_next[thread] = '0;
+            end
+         end
+      end
+
+      if (id_valid_qual && id_ctrl.mem && id_ctrl.wxd && !id_ctrl.fp && (id_waddr != 5'b0)) begin
+         id_load_pending_valid_next[id_thread_id] = 1'b1;
+         id_load_pending_dest_next[id_thread_id] = '{fp: 1'b0, addr: id_waddr, thread_id: id_thread_id};
+         id_load_pending_count_next[id_thread_id] = 3'd4;
+      end
+   end
+
+   always_ff @(posedge clock) begin
+      if (reset_w) begin
+         id_load_pending_valid <= '0;
+         id_load_pending_dest <= '0;
+         id_load_pending_count <= '0;
+      end else begin
+         id_load_pending_valid <= id_load_pending_valid_next;
+         id_load_pending_dest <= id_load_pending_dest_next;
+         id_load_pending_count <= id_load_pending_count_next;
+      end
+   end
+
+   assign id_int_sboard_hazard = |((id_int_sboard_bits | id_int_load_pending_bits) & id_int_hazard_en) || (id_int_sboard_x31 && id_inst_requires_x31);
 
    ////////////////////////////////////////////////////////////////////////////////
      // Float scoreboard that stores which float registers have long latency
@@ -1511,6 +1578,7 @@ module intpipe_top
    minion_control_t id_ctrl_to_ex;          // Control signals sent to EX
    logic            id_rvc;                 // If the instruction in ID is riscV compressed
    logic            id_flush_pipe;          // Send to EX that pipeline must be flushed
+   logic            id_is_fence_i;          // FENCE.I needs a frontend refetch after prior stores are visible
    logic            id_replay;              // Replay instruction in ID
    logic            id_xcpt_interrupt;      // Exception interrupt in ID
    logic            id_inst_en;             // Enable sampling of inst and PC to EX
@@ -1546,7 +1614,8 @@ module intpipe_top
            id_ctrl_to_ex.gsc = 1'b0;
         end
 
-        id_flush_pipe     = id_single_step[id_thread_id];      // Flush pipe
+        id_is_fence_i     = id_ctrl.fence && (id_inst_bits[14:12] == 3'b001) && (id_inst_bits[6:0] == 7'b0001111) && !id_xcpt_ignore_opcode;
+        id_flush_pipe     = id_single_step[id_thread_id] || id_is_fence_i;      // Flush pipe
         id_replay         = !id_take_pc && id_valid && id_inst_replay;         // Instruction need to be replayed
         id_xcpt_interrupt = !id_take_pc && id_valid && id_csr_interrupt[id_thread_id]  && !id_csr_flush_stall && !ex_gsc_busy;       // Dealing with an exception interrupt
 

@@ -34,8 +34,9 @@ uint32_t xorshift32(uint32_t& state) {
 
 void half_step(HalfModel& model, bool wr_pre, bool wr_en, uint8_t wr_addr, uint32_t wr_data,
                bool rd_en, uint8_t rd_addr) {
-    // Transparent latch: at negedge, current wr_pre gates the data capture.
-    if (wr_pre) model.wr_data_del = wr_data;
+    // The wrapper enables preview capture for either the early hint or the
+    // actual write enable, so writes without a hint still commit current data.
+    if (wr_pre || wr_en) model.wr_data_del = wr_data;
     if (wr_en) model.mem[wr_addr & 0x7f] = model.wr_data_del;
     if (rd_en) model.rd_addr_reg = rd_addr & 0x7f;
 }

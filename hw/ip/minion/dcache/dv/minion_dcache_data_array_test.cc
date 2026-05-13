@@ -171,10 +171,13 @@ std::array<uint64_t, kBanks> model_cycle(ModelState& model,
                                          bool s3_write_valid,
                                          bool s4_write_valid,
                                          const std::array<WriteReq, kBanks>& write_req) {
-    // Transparent latch: at negedge, current s3_write_valid gates the data capture.
+    // The LRAM wrappers capture on either the early S3 preview pulse or the
+    // actual S4 write enable, so unhinted writes still commit current data.
     for (int bank = 0; bank < kBanks; ++bank) {
-        if (s3_write_valid) {
+        if (s3_write_valid || (s4_write_valid && write_req[bank].valid_l)) {
             model.capture_lo[bank] = uint32_t(write_req[bank].data & 0xFFFFFFFFu);
+        }
+        if (s3_write_valid || (s4_write_valid && write_req[bank].valid_h)) {
             model.capture_hi[bank] = uint32_t((write_req[bank].data >> 32) & 0xFFFFFFFFu);
         }
     }

@@ -68,7 +68,7 @@ module intpipe_rf
     .rd_par_o             (wb_x31_reg),
     // Write port
     .wr_en_i              (wr_en[0]),
-    .wr_data_en_1p_next_i (wr_en_early[0]),
+    .wr_data_en_1p_next_i (wr_en_early[0] || wr_en[0]),
     .wr_addr_i            ({wr_thread_id, wr_addr[0]}),
     .wr_data_i            (wr_data[0])
   );

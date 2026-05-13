@@ -528,7 +528,7 @@ module intpipe_decode
       32'b010110000000xxxxxxxxxxxxx1010011: raw_inst_ctrl = {Y,Y,N,N,N,N,N,N,A2_X,   A1_X,   IMM_X, DW_X,  FN_X,    N,M_X,    MT_X,    N,N,N,N,N,N,CSR_N,N,N,N,N,N}; // FSQRT_S
       32'b010110000000xxxxxxxxxxxxx1111011: raw_inst_ctrl = {Y,Y,N,N,N,N,N,N,A2_X,   A1_X,   IMM_X, DW_X,  FN_X,    N,M_X,    MT_X,    N,N,N,N,N,N,CSR_N,N,N,N,N,N}; // FSQRT_PS
       32'b0001100xxxxxxxxxxxxxxxxxx1111011: raw_inst_ctrl = {Y,Y,N,N,N,N,N,N,A2_X,   A1_X,   IMM_X, DW_X,  FN_X,    N,M_X,    MT_X,    N,N,N,N,N,N,CSR_N,N,N,N,N,N}; // FDIV_PS
-      32'bxxxxxxxxxxxxxxxxx001xxxxx0001111: raw_inst_ctrl = {Y,Y,N,N,N,N,N,N,A2_X,   A1_X,   IMM_X, DW_X,  FN_X,    N,M_X,    MT_X,    N,N,N,N,N,N,CSR_N,N,N,N,N,N}; // FENCE_I
+      32'bxxxxxxxxxxxxxxxxx001xxxxx0001111: raw_inst_ctrl = {Y,N,N,N,N,N,N,N,A2_X,   A1_X,   IMM_X, DW_X,  FN_X,    N,M_X,    MT_X,    N,N,N,N,N,N,CSR_N,Y,N,N,N,N}; // FENCE_I
       32'b0001001xxxxxxxxxx000000001110011: raw_inst_ctrl = {Y,Y,N,N,N,N,N,N,A2_X,   A1_X,   IMM_X, DW_X,  FN_X,    N,M_X,    MT_X,    N,N,N,N,N,N,CSR_N,N,N,N,N,N}; // SFENCE_VMA
 
       // ── Default: illegal instruction ──

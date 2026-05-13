@@ -38,7 +38,7 @@ module minion_dcache_128x64_1r1w_lram
   ) u_rf_lo (
     .preview_clk_i        (clk_i),
     .rf_clk_i             (clk_i),
-    .wr_data_en_1p_next_i (wr_enablelo_pre_i),
+    .wr_data_en_1p_next_i (wr_enablelo_pre_i || lo_wr_en),
     .wr_data_i            (wr_data_i[31:0]),
     .wr_addr_i            (wr_addr_i),
     .wr_en_i              (lo_wr_en),
@@ -53,7 +53,7 @@ module minion_dcache_128x64_1r1w_lram
   ) u_rf_hi (
     .preview_clk_i        (clk_i),
     .rf_clk_i             (clk_i),
-    .wr_data_en_1p_next_i (wr_enablehi_pre_i),
+    .wr_data_en_1p_next_i (wr_enablehi_pre_i || hi_wr_en),
     .wr_data_i            (wr_data_i[63:32]),
     .wr_addr_i            (wr_addr_i),
     .wr_en_i              (hi_wr_en),

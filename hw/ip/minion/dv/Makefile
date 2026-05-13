@@ -178,3 +178,24 @@ LINT_SRCS := $(filter-out %.cc,$(smoke_SRCS))
 LINT_FLAGS := --top-module $(smoke_TOP) $(MINION_FLAGS)
 
 include $(REPO_ROOT)/mk/verilator.mk
+
+ACT_TOP := minion_top_act_tb
+ACT_PRIM_MUL_DIV_SRCS ?= $(REPO_ROOT)/hw/ip/tech_ecp5/prim_mul_div/rtl/prim_mul_div.sv
+ACT_RTL_SRCS := $(filter-out $(PRIM_MUL_DIV_SRCS),$(RTL_SRCS)) $(ACT_PRIM_MUL_DIV_SRCS)
+ACT_SRCS := $(ACT_RTL_SRCS) \
+            $(CURDIR)/minion_top_act_tb.sv \
+            $(CURDIR)/minion_top_act_test.cc
+ACT_OBJ_DIR := $(BUILD_DIR)/obj_minion_top_act
+ACT_BIN := $(ACT_OBJ_DIR)/V$(ACT_TOP)
+
+.PHONY: act-sim
+
+act-sim: $(ACT_BIN)
+
+$(ACT_BIN): $(ACT_SRCS)
+	@mkdir -p $(BUILD_DIR)
+	$(VERILATOR) $(COMMON_FLAGS) $(MINION_FLAGS) -GVpuEn=0 \
+	  --Mdir $(ACT_OBJ_DIR) \
+	  --top-module $(ACT_TOP) \
+	  -o V$(ACT_TOP) \
+	  $^

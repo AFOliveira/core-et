@@ -43,7 +43,7 @@ module minion_dcache_metadata_array
     ) u_mem_array (
       .preview_clk_i        (clk_i),
       .rf_clk_i             (clk_i),
-      .wr_data_en_1p_next_i (s1_write_valid_prev_i),
+      .wr_data_en_1p_next_i (s1_write_valid_prev_i || s1_write_valid_i),
       .wr_en_i              (s1_write_en[way]),
       .wr_addr_i            (s1_write_set),
       .wr_data_i            (s1_write_data),

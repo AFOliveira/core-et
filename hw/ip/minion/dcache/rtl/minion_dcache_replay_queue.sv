@@ -130,7 +130,7 @@ module minion_dcache_replay_queue
   ) u_replayq_push (
     .preview_clk_i        (clk_i),
     .rf_clk_i             (clk_i),
-    .wr_data_en_1p_next_i (push_req_prev_i),
+    .wr_data_en_1p_next_i (push_req_prev_i || push_req_i),
     .rd_data_o            (replayq_push_flat_q),
     .wr_data_i            (req_written_push),
     .wr_addr_i            (push_entry),
@@ -143,7 +143,7 @@ module minion_dcache_replay_queue
   ) u_replayq_rearm (
     .preview_clk_i        (clk_i),
     .rf_clk_i             (clk_i),
-    .wr_data_en_1p_next_i (push_req_prev_i || rearm_prev_i),
+    .wr_data_en_1p_next_i (push_req_prev_i || rearm_prev_i || push_req_i || rearm_i),
     .rd_data_o            (replayq_rearm_flat_q),
     .wr_data_i            (req_written_rearm),
     .wr_addr_i            (push_entry),

@@ -127,7 +127,9 @@ int main(int argc, char** argv) {
     sim.dut->s1_write_way_en_i = 0b0010;
     sim.dut->s1_write_coh_state_i = 0b01;
     sim.dut->s1_write_tag_i = 0x0ABCDEF01ULL;
-    // Latch opaque: current s1_write_valid_prev_i=0 → no capture, stale data committed.
+    // Actual writes now also enable the preview capture, so this commits the
+    // current write data even when the early preview hint was not asserted.
+    captured_write_data = {0b01, 0x0ABCDEF01ULL};
     tick_and_settle(sim);
     mem[6][1] = captured_write_data;
     valid[6][1] = true;
@@ -177,8 +179,9 @@ int main(int argc, char** argv) {
         sim.dut->s1_write_tag_i = tag;
         sim.dut->cfg_clear_all_i = clear_all;
         sim.dut->cfg_clear_low_i = clear_low;
-        // Latch transparent on negedge when current s1_write_valid_prev_i=1.
-        if (write_prev) {
+        // Metadata captures whenever the early preview hint or the actual
+        // write-valid is asserted.
+        if (write_prev || write_valid) {
             captured_write_data = {coh, tag};
         }
         tick_and_settle(sim);

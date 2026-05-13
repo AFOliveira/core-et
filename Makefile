@@ -4,7 +4,7 @@
 IP_DIRS    := $(sort $(dir $(wildcard hw/ip/*/dv/Makefile) $(wildcard hw/ip/*/*/dv/Makefile)))
 COSIM_DIRS := $(sort $(dir $(wildcard dv/rtlcosim/*/Makefile)))
 
-.PHONY: test test-xrand cosim-test coverage-report coverage-html update-cosim-coverage lint clean help
+.PHONY: test test-xrand cosim-test act-test coverage-report coverage-html update-cosim-coverage lint clean help
 
 test:
 	@pass=0; fail=0; \
@@ -44,6 +44,9 @@ cosim-test:
 	echo "  $$pass passed, $$fail failed, $$skip skipped (cosim)"; \
 	echo "========================================"; \
 	[ $$fail -eq 0 ]
+
+act-test:
+	@$(MAKE) --no-print-directory -C dv/act test
 
 coverage-report:
 	@mkdir -p build/coverage
@@ -161,6 +164,7 @@ help:
 	@echo "  test            - Build and run all IP unit tests"
 	@echo "  test-xrand      - Build and run all IP unit tests with randomized startup"
 	@echo "  cosim-test      - Build and run all RTL co-simulation tests"
+	@echo "  act-test        - Build and run PR-gated Minion ACT4 tests"
 	@echo "  coverage-report        - Generate LCOV .info files (line/branch/toggle)"
 	@echo "  coverage-html          - Generate interactive coverage dashboard"
 	@echo "  update-cosim-coverage  - Regenerate checked-in cosim .info files"

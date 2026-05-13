@@ -215,7 +215,8 @@ module minion_dcache_buffer_array
   ) u_rf_buffer_array (
     .preview_clk_i        (clk_i),
     .rf_clk_i             (clk_i),
-    .wr_data_en_1p_next_i (s2_write_en_ext_prev_i || s2_write_en_i),
+    .wr_data_en_1p_next_i (s2_write_en_ext_prev_i || s2_write_en_i
+                         || s3_write_en_q || s3_write_en_ext_i),
     .wr_en_i              (s3_write_en_q || s3_write_en_ext_i),
     .wr_addr_i            (s3_write_entry_mux),
     .wr_data_i            (s3_write_data_mux),

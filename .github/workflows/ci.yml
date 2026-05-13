@@ -53,7 +53,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            build-essential make libfl2 libfl-dev zlib1g-dev
+            build-essential make git curl python3 python3-venv \
+            ruby ruby-bundler gcc-riscv64-unknown-elf \
+            binutils-riscv64-unknown-elf libfl2 libfl-dev zlib1g-dev
 
       - name: Tool versions
         run: |
@@ -68,6 +70,9 @@ jobs:
 
       - name: Tests
         run: make test
+
+      - name: ACT4 Minion tests
+        run: make act-test
 
       - name: Generate LCOV info files
         run: make coverage-report
