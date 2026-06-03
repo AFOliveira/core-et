@@ -248,7 +248,9 @@ module core_top
   logic [NrThreads-1:0]                                 debug_exception;
   logic [NrThreads-1:0]                                 in_debug_mode;
   logic [NrThreads-1:0]                                 pending_halt_q;
+  /* verilator lint_off UNOPTFLAT */  // Halt pending qualification spans frontend/CSR handshake paths Verilator flattens into a false cycle.
   logic [NrThreads-1:0]                                 pending_halt;
+  /* verilator lint_on UNOPTFLAT */
 
   logic [InstSize-1:0]                                  te_wb_reg_inst;
   /* verilator lint_off UNUSEDSIGNAL */  // Trace staging consumes only the interrupt bit and architectural cause field from the preserved CSR cause struct.

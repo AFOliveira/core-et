@@ -5,6 +5,10 @@
 //
 // Tests millions of random 32-bit instruction encodings and compares the
 // full decode output bit-for-bit. Both modules are purely combinational.
+//
+// NOTE: Same-word comparison is NOT a valid ISA migration proof when opcodes
+// moved (custom-1 vs OP-32). Use dv/rtlcosim/minion_frontend_intpipe_decode_migration
+// for target-vs-reference migration cosim (packb, bitmixb, aif.europeriscvsummit).
 
 #include "Vcosim_intpipe_decode_tb.h"
 #include "cosim_ctrl.h"

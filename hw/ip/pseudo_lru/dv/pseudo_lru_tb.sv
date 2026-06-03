@@ -9,7 +9,9 @@ module pseudo_lru_tb #(
   input  logic                rst_ni,
   input  logic                access_i,
   input  logic [IdxWidth-1:0] index_in_i,
+  /* verilator lint_off UNOPTFLAT */  // TB exposes combinational PLRU replace index from the DUT.
   output logic [IdxWidth-1:0] index_out_o
+  /* verilator lint_on UNOPTFLAT */
 );
   pseudo_lru #(
     .NWays(NWays)
