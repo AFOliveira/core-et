@@ -5,7 +5,9 @@
 module vpu_decoder_tb
   import minion_pkg::*;
 #(
+  /* verilator lint_off WIDTHTRUNC */  // -GEnableExtraTrans=1 passes a 32-bit literal
   parameter bit EnableExtraTrans = 1'b0
+  /* verilator lint_on WIDTHTRUNC */
 ) (
   input  logic        clk_i,
   input  logic        rst_ni,

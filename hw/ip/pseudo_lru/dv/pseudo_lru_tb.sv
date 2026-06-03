@@ -1,6 +1,8 @@
 // Copyright (c) 2026 Ainekko
 // SPDX-License-Identifier: Apache-2.0
 
+/* verilator lint_off UNOPTFLAT */  // PLRU index_out feeds access path; lint-only TB reports a false combinational cycle.
+
 module pseudo_lru_tb #(
   parameter int unsigned NWays = 8,
   parameter int unsigned IdxWidth = $clog2(NWays)
@@ -21,3 +23,5 @@ module pseudo_lru_tb #(
     .index_out_o
   );
 endmodule
+
+/* verilator lint_on UNOPTFLAT */

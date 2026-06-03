@@ -418,7 +418,9 @@ module minion_dcache_top
   logic                            s1_is_amo;
   logic                            s1_is_msg;
   logic                            s1_is_gsc32;
+  /* verilator lint_off UNOPTFLAT */  // PMA error qualification fans into multi-stage replay/miss-handler cones Verilator flattens into a false cycle.
   logic                            s1_pma_bus_err;
+  /* verilator lint_on UNOPTFLAT */
   logic                            s1_addr_clk_en;
   logic                            s1_is_bypass;
   logic                            s1_is_to_null;
@@ -494,7 +496,9 @@ module minion_dcache_top
   logic [DcacheSetIdxWidth-1:0]    s4_co_da_clear_set;
   logic [DcacheWayIdxWidth-1:0]    s4_co_da_clear_way;
   logic                            s4_co_da_clear_idx;
+  /* verilator lint_off UNOPTFLAT */  // Clear-ready participates in staged data-array arbitration that Verilator flattens into a false cycle.
   logic                            s4_co_da_clear_rdy;
+  /* verilator lint_on UNOPTFLAT */
   /* verilator lint_off UNOPTFLAT */  // Cache-op/L2/tensor-load/miss-handler helpers below live in preserved multi-stage replay cones that Verilator flattens into false cycles.
   logic                            rq_conflict_to_co;
   minion_dcache_pkg::vm_status_t vm_status_co;
@@ -2120,6 +2124,7 @@ module minion_dcache_top
     end
   end
 
+  /* verilator lint_off BLKANDNBLK */  // Constant tie-offs use continuous assign; other s3_vpu_scp_resp_tmp fields use always_ff (preserved RTL semantics).
   assign s3_vpu_scp_resp_tmp.fill_is_tenb_early = 1'b0;
   assign s3_vpu_scp_resp_tmp.tenb_flush = 1'b0;
 
@@ -2130,6 +2135,7 @@ module minion_dcache_top
       s3_vpu_scp_resp_tmp.tenb_line <= s4_tl1_load_addr[DcacheSetIdxWidth-1:0];
     end
   end
+  /* verilator lint_on BLKANDNBLK */
 
   always_ff @(posedge clk_i) begin
     if (!rst_ni) begin

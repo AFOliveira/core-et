@@ -5,6 +5,7 @@ include $(REPO_ROOT)/mk/minion_vpu_sources.mk
 PKGS := $(REPO_ROOT)/hw/ip/dft/rtl/dft_pkg.sv \
         $(REPO_ROOT)/hw/ip/ram_cfg/rtl/ram_cfg_pkg.sv \
         $(REPO_ROOT)/hw/ip/etlink/rtl/etlink_pkg.sv \
+        $(REPO_ROOT)/hw/ip/icache_pkg/rtl/icache_geom_pkg.sv \
         $(REPO_ROOT)/hw/ip/shirecache/rtl/shirecache_pkg.sv \
         $(REPO_ROOT)/hw/ip/esr/rtl/esr_pkg.sv \
         $(REPO_ROOT)/hw/ip/minion/rtl/minion_pkg.sv \
@@ -12,7 +13,6 @@ PKGS := $(REPO_ROOT)/hw/ip/dft/rtl/dft_pkg.sv \
         $(REPO_ROOT)/hw/ip/minion/frontend/rtl/minion_frontend_pkg.sv \
         $(REPO_ROOT)/hw/ip/minion/intpipe/csr/rtl/intpipe_csr_pkg.sv \
         $(REPO_ROOT)/hw/ip/minion/dcache/rtl/minion_dcache_pkg.sv \
-        $(REPO_ROOT)/hw/ip/icache_pkg/rtl/icache_geom_pkg.sv \
         $(REPO_ROOT)/hw/ip/icache_pkg/rtl/icache_pkg.sv \
         $(REPO_ROOT)/hw/ip/neigh_pkg/rtl/neigh_pkg.sv \
         $(REPO_ROOT)/hw/ip/minion/vpu/rtl/vpu_pkg.sv \

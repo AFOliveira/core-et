@@ -415,7 +415,9 @@ module intpipe_csr_file
 
    // for cooperative tensor stores or loads if disabled
    logic                                            reg_tensor_store_en_qual;
+   /* verilator lint_off UNOPTFLAT */  // Tensor enable qualification spans CSR/exception paths Verilator flattens into a false cycle.
    logic                                            reg_tensor_load_en_qual;
+   /* verilator lint_on UNOPTFLAT */
    logic                                            reg_tensor_load_en_clean;
    logic                                            reg_tensor_fma_en_qual;
    logic                                            reg_tensor_reduce_en_qual;

@@ -110,7 +110,9 @@ module ptw_top (
 
   minion_pkg::minion_ptw_pte                   in_pte_tmp;
   logic                                        plru_access;
+  /* verilator lint_off UNOPTFLAT */  // PLRU replace index participates in PTE cache write mux Verilator flattens into a false cycle.
   logic [PtwCacheIdxSz-1:0]                    plru_replace_idx;
+  /* verilator lint_on UNOPTFLAT */
   logic [PtwSv48PgLevels-1:0][PtwPgIdxSz-1:0]  vpn_idxs;
   logic [PtwLevelCountSz-1:0]                  vpn_index;
   logic [PtwSv48PgLevels-1:0][PaTransSize-1:0] resp_ppns;
