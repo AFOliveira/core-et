@@ -38,7 +38,9 @@ module prim_arb_lru #(
   end
 
   // ── Winner computation ────────────────────────────────
+  /* verilator lint_off UNOPTFLAT */  // Priority tournament tree; Verilator lint-only builds report a false combinational cycle.
   logic [NumClients-1:0] win_per_client;
+  /* verilator lint_on UNOPTFLAT */
 
   always_comb begin
     for (int unsigned i = 0; i < NumClients; i++) begin

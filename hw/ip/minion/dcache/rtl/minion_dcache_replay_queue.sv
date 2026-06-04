@@ -182,7 +182,8 @@ module minion_dcache_replay_queue
 
   always_comb begin
     push_age_check_available = push_age_q[DcacheReplayqAgeCmpWidth-1:0]
-        + s0_alloc_req + s1_alloc_req_q + s2_alloc_req_q + s3_alloc_req_q;
+        + DcacheReplayqAgeCmpWidth'(s0_alloc_req) + DcacheReplayqAgeCmpWidth'(s1_alloc_req_q)
+        + DcacheReplayqAgeCmpWidth'(s2_alloc_req_q) + DcacheReplayqAgeCmpWidth'(s3_alloc_req_q);
 
     push_entry = '0;
     for (int unsigned i = 1; i < minion_dcache_pkg::DcacheReplayqSize; i++) begin

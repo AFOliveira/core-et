@@ -29,6 +29,7 @@ module minion_dcache_reduce
   /* verilator lint_on UNUSEDSIGNAL */
   output logic                               buffer_avail_o,
   input  logic                               re_l2_req_ready_i,
+  /* verilator lint_off UNOPTFLAT */  // L2 request valid/ready handshake preserved from original multi-client reduce cone.
   output logic                               re_l2_req_valid_o,
   output et_link_minion_evict_req_info_t     re_l2_req_o,
   input  logic                               ts_l2_req_ready_i,
@@ -69,6 +70,7 @@ module minion_dcache_reduce
   input  logic [DcacheDataSize-1:0]          s1_ba_data_i,
   output logic                               ba_read_en_o,
   output logic                               ba_read_en_spec_o,
+  /* verilator lint_on UNOPTFLAT */
   output logic [DcacheBufferIdxWidth-1:0]    ba_read_addr_o,
   input  logic                               scp_ctrl_on_i,
   input  logic                               vpu_reduce_wait_i,

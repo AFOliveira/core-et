@@ -213,7 +213,9 @@ module minion_dcache_tensor_load
   logic [minion_dcache_pkg::PaSize-7:0] req_addr_cline_q, req_addr_cline_d;
   logic [DcacheTlL2Transfers-1:0][DcacheWayIdxWidth-1:0] tl_load_way_q, tl_load_way_d;
   logic [DcacheTlL2Transfers-1:0][DcacheSetIdxWidth-1:0] tl_load_set_q, tl_load_set_d;
+  /* verilator lint_off UNOPTFLAT */  // Per-transfer L2 request vector updated from independent combinational paths.
   logic [DcacheTlL2Transfers-1:0] new_l2_req;
+  /* verilator lint_on UNOPTFLAT */
   logic [DcacheTlL2Transfers-1:0] new_data_chunk;
   logic [DcacheTlL2Transfers-1:0] received_error;
   logic [DcacheTlL2Transfers-1:0] received_answer;
@@ -619,7 +621,8 @@ module minion_dcache_tensor_load
       end
     end else if (trans_trp8) begin
       for (int i = 0; i < minion_dcache_pkg::CoreL2BlockExtSize/8; i++) begin
-        idx_buf = {i[4:0], 1'b0} + {shared_load_idx_q, 6'b0} + shared_count_q[DcacheTensorCtrlNlinesBits-1:3];
+        idx_buf = {i[4:0], 1'b0} + {shared_load_idx_q, 6'b0}
+            + {{6{1'b0}}, shared_count_q[DcacheTensorCtrlNlinesBits-1:3]};
         idx_byte = shared_count_q[2:0];
         idx_bufl = idx_buf[3:0];
         shared_load_data[i*8 +: 8] = tmp_data_q[idx_bufl][idx_byte*8 +: 8];
@@ -709,7 +712,7 @@ module minion_dcache_tensor_load
     end
 
     if ((ModuleIdx == 1) && s2_req_valid_q && s2_req_ready) begin
-      tenb_credits_d = tenb_credits_q - tensor_ctrl_tenb;
+      tenb_credits_d = tenb_credits_q - VpuTenbCreditBits'(tensor_ctrl_tenb);
       tenb_rcv_entry_d[tenb_idx] = 1'b0;
       tenb_count_d = tenb_count_q + 1'b1;
       tenb_idx_save = 1'b1;
